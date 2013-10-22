@@ -1,0 +1,42 @@
+
+8_vsan_BB"
+
+config t"$
+"vlan <<var_global_fcoe_B_vlan_id>>"
+name FCoE_Fabric_B"$
+"fcoe vsan <<var_global_vsan_B_id>>"
+exit"
+interface Po11"`
+^switchport trunk allowed vlan add <<var_global_fcoe_A_vlan_id>>, <<var_global_fcoe_B_vlan_id>>"
+exit"
+interface vfc11"
+bind interface Po11"
+no shutdown"
+exit"
+interface Po12"`
+^switchport trunk allowed vlan add <<var_global_fcoe_A_vlan_id>>, <<var_global_fcoe_B_vlan_id>>"
+exit"
+interface vfc12"
+bind interface Po12"
+no shutdown"
+exit"
+interface san-port-channel 2"
+channel mode active"
+exit"
+vsan database"-
++vsan <<var_global_vsan_B_id>> name Fabric_B"1
+/vsan <<var_global_vsan_B_id>> interface fc2/1-2"<
+:vsan <<var_global_vsan_B_id>> interface san-port-channel 2"/
+-vsan <<var_global_vsan_B_id>> interface vfc11"/
+-vsan <<var_global_vsan_B_id>> interface vfc12"
+exit"
+interface fc2/1-2"
+channel-group 2"
+no shutdown"
+exit"
+interface san-port-channel 2"
+channel mode active"
+switchport mode F"
+switchport trunk mode auto"
+exit"
+copy run start

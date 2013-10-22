@@ -1,0 +1,28 @@
+config t
+
+vlan <<var_new_tenant_vlan_id_access>> name <<var_new_tenant_name>>-access
+exit
+interface vlan <<var_new_tenant_vlan_id_access>> no shtdown
+exit
+
+interface port-channel13
+switchport trunk allowed vlan add <<var_new_tenant_vlan_id_access>>
+exit
+
+vlan <<var_new_tenant_vlan_id_backend>> name <<var_new_tenant_name>>-backend
+exit
+
+interface port-channel11
+switchport trunk allowed vlan add <<var_new_tenant_vlan_id_backend>>
+exit
+
+interface port-channel12
+switchport trunk allowed vlan add <<var_new_tenant_vlan_id_backend>>
+exit
+
+exit
+copy run start
+exit
+
+
+

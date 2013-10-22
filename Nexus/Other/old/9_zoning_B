@@ -1,0 +1,31 @@
+config t
+
+device-alias name esxi41_host_<<var_ntap_A_hostname>>_2a1_B pwwn <<vHBA_B_WWPN>>
+device-alias name esxi41_host_<<var_ntap_B_hostname>>_2a1_B pwwn <<vHBA_B_WWPN>>
+device-alias name <<var_ntap_A_hostname>>_2b pwwn <<2b_WWPN>>
+device-alias name <<var_ntap_B_hostname>>_2b pwwn <<2b_WWPN>>
+device-alias commit
+exit
+
+zone name esxi41_host_<<var_ntap_A_hostname>>_2a1_B vsan <<var_global_vsan_B_id>>
+member esxi41_host_<<var_ntap_A_hostname>>_2a1_B
+member <<var_ntap_B_hostname>>_2b
+member <<var_ntap_A_hostname>>_2b
+exit
+
+zone name esxi41_host_<<var_ntap_B_hostname>>_2a1_B vsan <<var_global_vsan_B_id>>
+member esxi41_host_<<var_ntap_B_hostname>>_2a1_B
+member <<var_ntap_B_hostname>>_2b
+member <<var_ntap_A_hostname>>_2b
+exit
+
+zoneset name flexpod vsan <<var_global_vsan_A_id>>
+member esxi41_host_<<var_ntap_B_hostname>>_2a1_B
+member esxi41_host_<<var_ntap_A_hostname>>_2a1_B
+exit
+
+zoneset activate name flexpod vsan <<var_global_vsan_B_id>>
+exit
+
+copy run start
+

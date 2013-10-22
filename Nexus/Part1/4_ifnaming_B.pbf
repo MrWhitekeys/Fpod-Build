@@ -1,0 +1,40 @@
+
+4_ifnaming_BB"
+
+config t"
+interface Po10"
+description vPC peer-link"
+exit"
+interface Eth1/5-6"
+channel-group 10 mode active"
+no shutdown"
+exit"
+interface Po11"%
+#description <<var_ntap_A_hostname>>"
+exit"
+interface Eth1/1"
+channel-group 11 mode active"
+no shutdown"
+exit"
+interface Po12"%
+#description <<var_ntap_B_hostname>>"
+exit"
+interface Eth1/2"
+channel-group 12 mode active"
+no shutdown"
+exit"
+interface Po13"%
+#description <<var_ucsm_A_hostname>>"
+exit"
+interface Eth1/3"
+channel-group 13 mode active"
+no shutdown"
+exit"
+interface Po14"%
+#description <<var_ucsm_B_hostname>>"
+exit"
+interface Eth1/4"
+channel-group 14 mode active"
+no shutdown"
+exit"
+copy run start

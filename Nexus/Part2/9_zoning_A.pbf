@@ -1,0 +1,29 @@
+
+
+9_zoning_A	A"
+
+config t"
+device-alias database"_
+]device-alias name esxi41_host_<<var_ntap_A_hostname>>_2a1_A pwwn <<var_ucsm_spA_vHBA_A_wwpn>>"_
+]device-alias name esxi41_host_<<var_ntap_B_hostname>>_2b1_A pwwn <<var_ucsm_spB_vHBA_A_wwpn>>"H
+Fdevice-alias name <<var_ntap_A_hostname>>_2a pwwn <<var_ntap_A_fc_2a>>"H
+Fdevice-alias name <<var_ntap_B_hostname>>_2a pwwn <<var_ntap_B_fc_2a>>"
+exit"
+device-alias commit"S
+Qzone name esxi41_host_<<var_ntap_A_hostname>>_2a1_A vsan <<var_global_vsan_A_id>>"?
+=member device-alias esxi41_host_<<var_ntap_A_hostname>>_2a1_A"0
+.member device-alias <<var_ntap_A_hostname>>_2a"0
+.member device-alias <<var_ntap_B_hostname>>_2a"
+exit"S
+Qzone name esxi41_host_<<var_ntap_B_hostname>>_2b1_A vsan <<var_global_vsan_A_id>>"?
+=member device-alias esxi41_host_<<var_ntap_B_hostname>>_2b1_A"0
+.member device-alias <<var_ntap_B_hostname>>_2a"0
+.member device-alias <<var_ntap_A_hostname>>_2a"
+exit"4
+2zoneset name flexpod vsan <<var_global_vsan_A_id>>"2
+0member esxi41_host_<<var_ntap_A_hostname>>_2a1_A"2
+0member esxi41_host_<<var_ntap_B_hostname>>_2b1_A"
+exit"=
+;zoneset activate name flexpod vsan <<var_global_vsan_A_id>>"
+exit"
+copy run start

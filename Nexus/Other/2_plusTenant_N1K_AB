@@ -1,0 +1,25 @@
+config t
+
+vlan <<var_new_tenant_vlan_id_access>> name <<var_new_tenant_name>>-access
+vlan <<var_new_tenant_vlan_id_backend>> name <<var_new_tenant_name>>-backend
+exit
+
+port-profile type vethernet <<var_new_tenant_name>>-access
+  vmware port-group
+  switchport mode access
+  switchport access vlan <<var_new_tenant_vlan_id_access>>
+  no shutdown
+  system vlan <<var_new_tenant_vlan_id_access>>
+  state enabled
+
+port-profile type vethernet <<var_new_tenant_name>>-backend
+  vmware port-group
+  switchport mode access
+  switchport access vlan <<var_new_tenant_vlan_id_backend>>
+  no shutdown
+  system vlan <<var_new_tenant_vlan_id_backend>>
+  state enabled
+exit
+
+exit
+copy run start

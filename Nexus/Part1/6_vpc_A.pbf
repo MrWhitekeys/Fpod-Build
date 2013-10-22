@@ -1,0 +1,24 @@
+
+6_vpc_AA"
+
+config t"(
+&vpc domain <<var_nexus_vpc_domain_id>>"
+role priority 10"U
+Speer-keepalive destination <<var_nexus_B_mgmt0_IP>> source <<var_nexus_A_mgmt0_IP>>"
+exit"
+interface Po10"
+vpc peer-link"
+exit"
+interface Po11"
+vpc 11"
+exit"
+interface Po12"
+vpc 12"
+exit"
+interface Po13"
+vpc 13"
+exit"
+interface Po14"
+vpc 14"
+exit"
+copy run start

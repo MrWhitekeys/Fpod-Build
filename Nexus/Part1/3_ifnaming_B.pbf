@@ -1,0 +1,23 @@
+
+3_ifnaming_BB"
+
+config t"
+interface Eth1/1")
+'description <<var_ntap_A_hostname>>:e2b"
+exit"
+interface Eth1/2")
+'description <<var_ntap_B_hostname>>:e2b"
+exit"
+interface Eth1/5"-
++description <<var_nexus_A_hostname>>:Eth1/5"
+exit"
+interface Eth1/6"-
++description <<var_nexus_A_hostname>>:Eth1/6"
+exit"
+interface Eth1/3"-
++description <<var_ucsm_A_hostname>>:Eth1/20"
+exit"
+interface Eth1/4"-
++description <<var_ucsm_B_hostname>>:Eth1/20"
+exit"
+copy run start

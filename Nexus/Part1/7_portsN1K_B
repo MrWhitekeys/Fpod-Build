@@ -1,0 +1,20 @@
+config t
+
+int eth1/7
+description <<var_n1010_A_hostname>>:Eth2
+switchport
+switchport mode trunk
+switchport trunk allowed vlan <<var_global_mgmt_vlan_id>>,<<var_global_packet_control_vlan_id>>
+speed 1000
+spanning-tree port type edge trunk
+no shut
+exit
+int eth1/8
+description <<var_n1010_B_hostname>>:Eth2
+switchport
+switchport mode trunk
+switchport trunk allowed vlan <<var_global_mgmt_vlan_id>>,<<var_global_packet_control_vlan_id>>
+speed 1000
+spanning-tree port type edge trunk
+no shut
+copy run start

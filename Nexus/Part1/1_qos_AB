@@ -1,0 +1,78 @@
+config t
+feature lacp
+feature fcoe
+feature npiv
+feature vpc
+feature fport-channel-trunk
+
+spanning-tree port type network default
+spanning-tree port type edge bpduguard default
+spanning-tree port type edge bpdufilter default
+
+system jumbomtu 9000
+
+ip access-list classify_COS_5
+10 permit ip <<var_global_nfs_net_addr>> any
+20 permit ip any <<var_global_nfs_net_addr>>
+exit
+
+class-map type qos Platinum_Traffic
+match access-group name classify_COS_5
+exit
+
+ip access-list classify_COS_4
+10 permit ip <<var_global_vmotion_net_addr>> any
+20 permit ip any <<var_global_vmotion_net_addr>>
+exit
+
+class-map type qos Silver_Traffic
+match access-group name classify_COS_4
+exit
+
+policy-map type qos Global_Classify
+class Platinum_Traffic
+set qos-group 2
+exit
+
+class Silver_Traffic
+set qos-group 4
+exit
+
+class class-fcoe
+set qos-group 1
+exit
+
+class-map type network-qos Platinum_Traffic_NQ
+match qos-group 2
+exit
+
+class-map type network-qos Silver_Traffic_NQ
+match qos-group 4
+exit
+
+Policy-map type network-qos Setup_QOS
+class type network-qos Platinum_Traffic_NQ
+set cos 5
+mtu 9000
+exit
+
+class type network-qos Silver_Traffic_NQ
+set cos 4
+mtu 9000
+exit
+
+class type network-qos class-fcoe
+pause no-drop
+mtu 2158
+exit
+
+exit
+
+system qos
+service-policy type queuing input fcoe-default-in-policy
+service-policy type queuing output fcoe-default-out-policy
+service-policy type qos input Global_Classify
+service-policy type network-qos Setup_QOS
+exit
+
+copy run start

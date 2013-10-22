@@ -1,0 +1,119 @@
+Variable;Description;Customer Implementation Value
+<<var_node01_mgmt_ip>>;Out-of-band management IP for cluster node 01
+<<var_node01_mgmt_mask>>;Out-of-band management network netmask
+<<var_node01_mgmt_gateway>>;Out-of-band management network default gateway
+<<var_url_boot_software>>;Data ONTAP 8.1.2 URL; format: http://
+<<var_#_of_disks>>;Number of disks to assign to each storage controller
+<<var_node02_mgmt_ip>>;Out-of-band management IP for cluster node 02
+<<var_node02_mgmt_mask>>;Out-of-band management network netmask
+<<var_node02_mgmt_gateway>>;Out-of-band management network default gateway
+<<var_clustername>>;Storage cluster host name
+<<var_cluster_base_license_key>>;Cluster base license key
+<<var_password>>;Global default administrative password
+<<var_clustermgmt_ip>>;In-band management IP for the storage cluster
+<<var_clustermgmt_mask>>;In-band management network netmask 
+<<var_clustermgmt_gateway>>;In-band management network default gateway
+<<var_dns_domain_name>>;DNS domain name
+<<var_nameserver_ip>>;DNS server IP(s)
+<<var_node_location>>;Node location string for each node
+<<var_node01>>;Cluster node 01 host name
+<<var_node02>>;Cluster node 02 host name
+<<var_raidsize>>;RAID group size for each node
+<<var_num_disks>>;Number of disks to assign to each storage data aggregate
+<<var_node01_sp_ip>>;Out-of-band cluster node 01 service processor management IP
+<<var_node01_sp_mask>>;Out-of-band management network netmask
+<<var_node01_sp_gateway>>;Out-of-band management network default gateway
+<<var_node02_sp_ip>>;Out-of-band cluster node 02 device processor management IP
+<<var_node02_sp_mask>>;Out-of-band management network netmask
+<<var_node02_sp_gateway>>;Out-of-band management network default gateway
+<<var_timezone>>;FlexPod time zone (for example, America/New_York)
+<<var_global_ntp_server_ip>>;NTP server IP address
+<<var_snmp_contact>>;Administrator e-mail address
+<<var_snmp_location>>;Cluster location string
+<<var_oncommand_server_fqdn>>;VSC or OnCommand virtual machine fully qualified domain name (FQDN)
+<<var_snmp_community>>;Storage cluster SNMP v1/v2 community name
+<<var_mailhost>>;Mail server host name
+<<var_storage_admin_email>>;Administrator e-mail address
+<<var_security_cert_vserver_common_name>>;Infrastructure Vserver FQDN
+<<var_country_code>>;Two-letter country code
+<<var_state>>;State or province name
+<<var_city>>;City name
+<<var_org>>;Organization or company name
+<<var_unit>>;Organizational unit name
+<<var_security_cert_cluster_common_name>>;Storage cluster FQDN
+<<var_security_cert_node01_common_name>>;Cluster node 01 FQDN
+<<var_security_cert_node02_common_name>>;Cluster node 02 FQDN
+<<var_esxi_host1_nfs_ip>>;NFS VLAN IP address for each VMware ESXi host
+<<var_node01_nfs_lif_ip>>;Cluster node 01 NFS VLAN IP address
+<<var_node01_nfs_lif_mask>>;NFS VLAN netmask
+<<var_node02_nfs_lif_ip>>;Cluster node 02 NFS VLAN IP address
+<<var_node02_nfs_lif_mask>>;NFS VLAN netmask
+<<var_nexus_A_hostname>>;Cisco Nexus A host name
+<<var_nexus_A_mgmt0_ip>>;Out-of-band Cisco Nexus A management IP address
+<<var_nexus_A_mgmt0_netmask>>;Out-of-band management network netmask
+<<var_nexus_A_mgmt0_gw>>;Out-of-band management network default gateway
+<<var_nexus_B_hostname>>;Cisco Nexus B host name
+<<var_nexus_B_mgmt0_ip>>;Out-of-band Cisco Nexus B management IP address
+<<var_nexus_B_mgmt0_netmask>>;Out-of-band management network netmask
+<<var_nexus_B_mgmt0_gw>>;Out-of-band management network default gateway
+<<var_ib-mgmt_vlan_id>>;In-band management network VLAN ID
+<<var_native_vlan_id>>;Native VLAN ID
+<<var_nfs_vlan_id>>;NFS VLAN ID
+<<var_pkt-ctrl_vlan_id>>;Cisco Nexus 1000v packet control VLAN ID
+<<var_vmotion_vlan_id>>;VMware vMotion® VLAN ID
+<<var_vm-traffic_vlan_id>>;VM traffic VLAN ID
+<<var_nexus_vpc_domain_id>>;Unique Cisco Nexus switch VPC domain ID
+<<var_nexus_1110x-1>>;Cisco Nexus 1110X-1 host name
+<<var_nexus_1110x-2>>;Cisco Nexus 1110X-2 host name
+<<var_fabric_a_fcoe_vlan_id>>;Fabric A FCoE VLAN ID
+<<var_vsan_a_id>>;Fabric A VSAN ID
+<<var_fabric_b_fcoe_vlan_id>>;Fabric B FCoE VLAN ID
+<<var_vsan_b_id>>;Fabric B VSAN ID
+<<var_ucs_clustername>>;Cisco UCS Manager cluster host name
+<<var_ucsa_mgmt_ip>>;Cisco UCS fabric interconnect (FI) A out-of-band management IP address
+<<var_ucsa_mgmt_mask>>;Out-of-band management network netmask
+<<var_ucsa_mgmt_gateway>>;Out-of-band management network default gateway
+<<var_ucs_cluster_ip>>;Cisco UCS Manager cluster IP address
+<<var_ucsb_mgmt_ip>>;Cisco UCS FI B out-of-band management IP address
+<<var_cimc_ip>>;Out-of-band management IP for each Cisco Nexus 1110-X CIMC
+<<var_cimc_mask>>;Out-of-band management network netmask
+<<var_cimc_gateway>>;Out-of-band management network default gateway
+<<var_1110x_domain_id>>;Unique Cisco Nexus 110-X domain ID
+<<var_1110x_vsa>>;Virtual storage appliance (VSA) host name
+<<var_1110x_vsa_ip>>;In-band VSA management IP address
+<<var_1110x_vsa_mask>>;In-band management network netmask
+<<var_1110x_vsa_gateway>>;In-band management network default gateway
+<<var_vsm_domain_id>>;Unique Cisco Nexus 1000v virtual supervisor module (VSM) domain ID
+<<var_vsm_mgmt_ip>>;Cisco Nexus 1000v VSM management IP address
+<<var_vsm_mgmt_mask>>;In-band management network netmask
+<<var_vsm_mgmt_gateway>>;In-band management network default gateway
+<<var_vsm_hostname>>;Cisco Nexus 1000v VSM host name
+<<var_vcenter_server_ip>>;vCenter Server IP
+<<var_nodename>>;Name of node
+<<var_node01_rootaggrname>>;Root aggregate name of Node 01
+<<var_clustermgmt_port>>;Port for cluster management
+<<var_global_domain_name>>;Domain name
+<<var_dns_ip>>;IP address of the DNS server
+<<var_vsadmin_password>>;Password for VS admin account
+<<var_vserver_mgmt_ip>>;Management IP address for Vserver
+<<var_vserver_mgmt_mask>>;Subnet mask for Vserver
+<<var_rule_index>>;Rule index number
+<<var_ftp_server>>;IP address for FTP server
+<<var_vm_host_infra_01_A_wwpn>>;WWPN of VM-Host-Infra-01 vHBA-A
+<<var_vm_host_infra_02_A_wwpn>>;WWPN of VM-Host-Infra-02 vHBA-A
+<<var_fcp_lif01a_wwpn>>;WWPN of FCP_LIF01a
+<<var_fcp_lif02a_wwpn>>;WWPN of FCP_LIF02a
+<<var_vm_host_infra_01_B_wwpn>>;WWPN of VM-Host-Infra-01 vHBA-B
+<<var_vm_host_infra_02_B_wwpn>>;WWPN of VM-Host-Infra-02 vHBA-B
+<<var_fcp_lif01b_wwpn>>;WWPN of FCP_LIF01b
+<<var_fcp_lif02b_wwpn>>;WWPN of FCP_LIF02b
+<<var_vmhost_infra01_ip>>;VMware ESXi host 01 in-band management IP
+<<var_vmhost_infra02_ip>>;VMware ESXi host 02 in-band management IP
+<<var_nfs_vlan_id_ip_host-01>>;NFS VLAN IP address for ESXi host 01
+<<var_nfs_vlan_id_mask_host-01>>;NFS VLAN netmask for ESXi host 01
+<<var_vmotion_vlan_id_ip_host-01>>;vMotion VLAN IP address for ESXi host 01
+<<var_vmotion_vlan_id_mask_host-01>>;vMotion VLAN netmask for ESXi host 01
+<<var_nfs_vlan_id_ip_host-02>>;NFS VLAN IP address for ESXi host 02
+<<var_nfs_vlan_id_mask_host-02>>;NFS VLAN netmask for ESXi host 02
+<<var_vmotion_vlan_id_ip_host-02>>;vMotion VLAN IP address for ESXi host 02
+<<var_vmotion_vlan_id_mask_host-02>>;vMotion VLAN netmask for ESXi host 02

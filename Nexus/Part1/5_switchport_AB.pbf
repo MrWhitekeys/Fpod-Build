@@ -1,0 +1,45 @@
+
+5_switchport_ABAB"
+
+config t"
+
+int Po10"
+switchport mode trunk"<
+:switchport trunk native vlan <<var_global_native_vlan_id>>"¾
+»switchport trunk allowed vlan <<var_global_mgmt_vlan_id>>,<<var_global_nfs_vlan_id>>,<<var_global_packet_control_vlan_id>>,<<var_global_vmotion_vlan_id>>,<<var_global_vm_traffic_vlan_id>>"!
+spanning-tree port type network"	
+no shut"
+exit"
+
+int Po11"
+switchport mode trunk"<
+:switchport trunk native vlan <<var_global_native_vlan_id>>":
+8switchport trunk allowed vlan <<var_global_nfs_vlan_id>>"$
+"spanning-tree port type edge trunk"	
+no shut"
+exit"
+
+int Po12"
+switchport mode trunk"<
+:switchport trunk native vlan <<var_global_native_vlan_id>>":
+8switchport trunk allowed vlan <<var_global_nfs_vlan_id>>"$
+"spanning-tree port type edge trunk"	
+no shut"
+exit"
+
+int Po13"
+switchport mode trunk"<
+:switchport trunk native vlan <<var_global_native_vlan_id>>"¾
+»switchport trunk allowed vlan <<var_global_mgmt_vlan_id>>,<<var_global_nfs_vlan_id>>,<<var_global_packet_control_vlan_id>>,<<var_global_vmotion_vlan_id>>,<<var_global_vm_traffic_vlan_id>>"$
+"spanning-tree port type edge trunk"	
+no shut"
+exit"
+
+int Po14"
+switchport mode trunk"<
+:switchport trunk native vlan <<var_global_native_vlan_id>>"¾
+»switchport trunk allowed vlan <<var_global_mgmt_vlan_id>>,<<var_global_nfs_vlan_id>>,<<var_global_packet_control_vlan_id>>,<<var_global_vmotion_vlan_id>>,<<var_global_vm_traffic_vlan_id>>"$
+"spanning-tree port type edge trunk"	
+no shut"
+exit"
+copy run start

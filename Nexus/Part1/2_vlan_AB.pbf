@@ -1,0 +1,20 @@
+
+	2_vlan_ABAB"
+
+config t"!
+vlan <<var_global_nfs_vlan_id>>"
+name NFS-VLAN"
+exit""
+ vlan <<var_global_mgmt_vlan_id>>"
+name MGMT-VLAN"
+exit"%
+#vlan <<var_global_vmotion_vlan_id>>"
+name vMotion-VLAN"
+exit",
+*vlan <<var_global_packet_control_vlan_id>>"
+name Packet-Control-VLAN"
+exit"(
+&vlan <<var_global_vm_traffic_vlan_id>>"
+name VM-Traffic-VLAN"
+exit"
+copy run start
