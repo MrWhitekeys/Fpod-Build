@@ -1,11 +1,11 @@
 ###########################################################################################################################
 # Generate csv with with variables and values from data gathering excel sheet. 										      #
-# 			Forked and revised by Ryan Neubauer, Ryan@whitekeys.net	 													  #
+# 			Created by Ryan Neubauer, Ryan@whitekeys.net			 													  #
 ###########################################################################################################################
 
 
 ###############################################################################################################################
-# This Script was built by taking a "Best-of-Breed" approach from many scripts i've found.           						  #
+# This Script was built by taking a "Best-of-Breed" approach from many scripts.           						  #
 ###############################################################################################################################
 
 ###########################
@@ -14,24 +14,22 @@
  
 param([parameter(mandatory=$true)][validateNotNullOrEmpty()]$excelFile, [switch]$toConsole)
 
+
+### Imports
+Import-Module "../src/FPodConfig.psm1"
+
+##### set up script logging
+
+$thisPath = Split-Path (Resolve-Path $MyInvocation.MyCommand.Path)
+Start-Transcript "../logs/Get-Answers-Script.log" -Append
+Write-Host "Starting script logging."
+
+
 function Remove-File
 {
 	param($fileName)
 	if (Test-Path($fileName)) { del $fileName }
 } ##### End of function Remove-File
-
-##### set up script logging
-$ErrorActionPreference="SilentlyContinue"
-Stop-Transcript | out-null
-$ErrorActionPreference = "Continue"
-$thisPath = Split-Path (Resolve-Path $MyInvocation.MyCommand.Path)
-Set-Location $thisPath
-$scriptLog = "./Logs/Get-Answers_Script_Log.txt"
-$scriptLogFullPath = Join-Path $thisPath $scriptLog
-Start-Transcript $scriptLogFullPath -Append
-Write-Host "Starting script logging."
-
-
 
 ######################################
 # Do the import from the Excel Sheet #
@@ -56,7 +54,7 @@ catch {
 	Remove-ComObject
 	exit(3)
 }
-$Anwsers = @{}
+$Answers = @{}
 $Netapp = @{}
 $UCS = @{}
 $VMWare = @{}
@@ -81,13 +79,13 @@ $ws1.Activate()
 Write-Host "Read values from worksheet $cust_sheet_name..."
 $i=2
 do{
-	$config.add($ws1.Cells.Item($i, 1).Value2.Trim(), $ws1.Cells.Item($i, 2).Value2)
+	$Answers.add($ws1.Cells.Item($i, 1).Value2.Trim(), $ws1.Cells.Item($i, 2).Value2)
 	$i++
 }
 while($ws1.Cells.Item($i, 1).Value2)
 
 ###Get Variables
-$cust_sheet_name = $config.Get_Item("<<ans_boot_from>>") + " Variables"
+$cust_sheet_name = $answers.Get_Item("<<ans_boot_from>>") + " Variables"
 Write-Host "Open worksheet $cust_sheet_name..."
 try { $ws1 = $wb.Worksheets.Item($cust_sheet_name) }
 catch {
@@ -105,37 +103,36 @@ $i=3
 while($ws1.Cells.Item($i, 1).Value2){
 	switch -wildcard ($ws1.Cells.Item($i, 1).Value2)
 	{
-		"<<ntap*" {$Netapp.add($_, $ws1.Cells.Item($i, 2).Value2)}
-		"<<ucs*" {$UCS.add($_, $ws1.Cells.Item($i, 2).Value2)}
-		"<<nex*" {$Nexus.add($_, $ws1.Cells.Item($i, 2).Value2)}
-		"<<global*" {$Global.add($_, $ws1.Cells.Item($i, 2).Value2)}
-		"<<ans*" {$Answers.add($_, $ws1.Cells.Item($i, 2).Value2)}
-		"<<vmw*" {$VMWare.add($_, $ws1.Cells.Item($i, 2).Value2)}
-		"<<nx1*" {if($Answers.Get_Item("<<ans_1000v>>")){$NX1000v.add($_, $ws1.Cells.Item($i, 2).Value2)}}
-		default {$config.add($_, $ws1.Cells.Item($i, 2).Value2)}
+		"<<ntap*" {$Netapp.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
+		"<<ucs*" {$UCS.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
+		"<<nex*" {$Nexus.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
+		"<<global*" {$Global.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
+		"<<ans*" {$answers.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
+		"<<vmw*" {$VMWare.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
+		"<<nx1*" {if($answers.Get_Item("<<ans_1000v>>")){$NX1000v.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}}
+		default {$config.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
 	}
 	$i++
 }
 
 
-Write-Host "Save configurations in separate files..."
-#Save answers to file so each script can run separately 
-$Netapp.GetEnumerator() | sort name | Select-Object -Property Name,Value | export-csv "./Config/netapp-config.csv" -notype
-$Nexus.GetEnumerator() | sort name | Select-Object -Property Name,Value | export-csv "./Config/nexus-config.csv" -notype
-$UCS.GetEnumerator() | sort name | Select-Object -Property Name,Value | export-csv "./Config/ucs-config.csv" -notype
-$VMWare.GetEnumerator() | sort name | Select-Object -Property Name,Value | export-csv "./Config/vmware-config.csv" -notype
-$Global.GetEnumerator() | sort name | Select-Object -Property Name,Value | export-csv "./Config/global-config.csv" -notype
-$Answers.GetEnumerator() | sort name | Select-Object -Property Name,Value | export-csv "./Config/Answers-config.csv" -notype
-if($Answers.Get_Item("<<ans_1000v>>")){
-	$NX1000v.GetEnumerator() | sort name | Select-Object -Property Name,Value | export-csv "./Config/1000v-config.csv" -notype
+Write-Host "Saving configurations ..."
+#Save answers to file so each script 
+Dump-Csv "../Config/netapp-config.csv" $Netapp
+Dump-Csv "../Config/nexus-config.csv" $Nexus
+Dump-Csv "../Config/ucs-config.csv" $UCS
+Dump-Csv "../Config/vmware-config.csv" $VMWare
+Dump-Csv "../Config/global-config.csv" $Global
+Dump-Csv "../Config/answers-config.csv" $answers 
+if($answers.Get_Item("<<ans_1000v>>")){
+	Dump-Csv "../Config/1000v-config.csv" $NX1000v
 }
-#Write-Host "the following items have been added"
-#foreach ($name in @($config.keys)){
-#	Write-Host "$name "$config.Get_Item($name)
-#}
+Dump-Csv "../Config/config.csv" $config 
+Write-Host "Save complete ..."
 ##### close Excel and cleanup
 Write-Host "Close Excel file..."
 $wb.Close()
 $excel.Quit()
-Remove-Variable wb, excel, i
+Remove-Variable wb, excel, answers, Global, VMWare, UCS, Nexus, Netapp
 
+Stop-Transcript

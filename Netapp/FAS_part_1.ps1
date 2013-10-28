@@ -71,17 +71,26 @@ $VIRTUAL_ETH_INTERFACE_NAME = $config.Get_Item("<<ntap_vif_name>>")
 
 ## TODO: update list for accurate cluster licenses
 
-$LICENSE_TYPES_H = @{   "a_sis"             = $config.Get_Item("<<var_ntap_a_sis_lic>>");
-                        "multistore"        = $config.Get_Item("<<var_ntap_multistore_lic>>");
-                        "nearstore_option"  = $config.Get_Item("<<var_ntap_nearstore_option_lic>>");
-                        "flex_clone"        = $config.Get_Item("<<var_ntap_flexclone_lic>>");
-                        "fcp"               = $config.Get_Item("<<var_ntap_fcp_lic>>");
-                        "nfs"               = $config.Get_Item("<<var_ntap_nfs_lic>>");
-                        "cluster"           = $config.Get_Item("<<var_ntap_cluster_lic>>");
+$LICENSE_NODE_A = @{   #"a_sis"             = $config.Get_Item("<<var_ntap_a_sis_lic>>");
+                        #"multistore"        = $config.Get_Item("<<var_ntap_multistore_lic>>");
+                        "iscsi"				= $config.Get_Item("<<ntap_node01_iscsi_license_key>>");
+                        "flex_clone"        = $config.Get_Item("<<ntap_node01_flexclone_license_key>>");
+                        "fcp"               = $config.Get_Item("<<ntap_node01_fcp_license_key>>");
+                        "nfs"               = $config.Get_Item("<<ntap_node01_nfs_license_key>>");
+                        "cluster"           = $config.Get_Item("<<ntap_cluster_base_license_key>>");
                         # TODO: "flash_cache" == "flex_scale"?
                         #"flash_cache"       = $config.Get_Item("<<var_ntap_flash_cache_lic>>");
                     }
 #Set-Variable LICENSE_TYPES_A 
+$LICENSE_NODE_B = @{   #"a_sis"             = $config.Get_Item("<<var_ntap_a_sis_lic>>");
+                        #"multistore"        = $config.Get_Item("<<var_ntap_multistore_lic>>");
+                        "iscsi"				= $config.Get_Item("<<ntap_node02_iscsi_license_key>>");
+                        "flex_clone"        = $config.Get_Item("<<ntap_node02_flexclone_license_key>>");
+                        "fcp"               = $config.Get_Item("<<ntap_node02_fcp_license_key>>");
+                        "nfs"               = $config.Get_Item("<<ntap_node02_nfs_license_key>>");
+                        # TODO: "flash_cache" == "flex_scale"?
+                        #"flash_cache"       = $config.Get_Item("<<var_ntap_flash_cache_lic>>");
+                    }
                     
 $CONTROLLER_A_VOLUMES_H = @{        "infra_root"        =  @{ "size"                 = $config.Get_Item("<<var_ntap_infra_root_vol_size>>");
                                                               "enable_sis"           = 0;
@@ -150,12 +159,12 @@ function ComputeMD5Hash([string] $inputString) {
 
 #Step 1 - assign controller disk ownership needs to be done manually from the console
 
-#Step 2 - downgrade ONTAP needs to be done from the console
+#Step 2 - downgrade ONTAP needs to be done from the console _WHY WOULD YOU DOWNGRADE?
 
 #Step 3 - Power up controllers and complete initial setup.  This step can be done from the script if we 
 #		  can determine the IP address the controller receives from a DHCP server.  To setup or initialize
 #		  the controller from the script use the Initialize-NaController command like below.  There are a couple of 
-#		  variables that still need to be defined, $config.Get_Item("<<var_global_dns_domain>>") and $config.Get_Item("<<var_global_dns_servers>>")
+#		  variables that need to be defined, $config.Get_Item("<<var_global_dns_domain>>") and $config.Get_Item("<<var_global_dns_servers>>")
 #Initialize-NaController -DhcpAddress $DHCPAddress_A -Hostname $config.Get_Item("<<var_ntap_A_hostname>>") -Gateway $config.Get_Item("<<var_ntap_A_mgmt_int_gw>>") -PrimaryInterface $config.Get_Item("<<var_ntap_netboot_int>>") -PrimaryInterfaceAddress $config.Get_Item("<<var_ntap_A_netboot_int_IP>>") -Password $config.Get_Item("<<var_global_default_passwd>>") -Timezone $config.Get_Item("<<var_global_default_timezone>>") -Emailhost $config.Get_Item("<<var_ntap_mailhost_name>>") -EmailAddress $config.Get_Item("<<var_ntap_admin_email_address>>") -Location $config.Get_Item("<<var_ntap_location>>") -Dnsdomain $config.Get_Item("<<var_global_dns_domain>>") -DnsServers $config.Get_Item("<<var_global_dns_servers>>")
 
 #Step 4 - installing DataONTAP to the onboard flash storage
@@ -163,16 +172,16 @@ function ComputeMD5Hash([string] $inputString) {
 #controller B: software install $config.Get_Item("<<var_ntap_data_ontap_url>>")
 
 #Step 5 - install required licenses
-function Licenses([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
-	$logger.Info(" ")
-	$logger.Info("Entered function Licenses on $controller")
+function Licenses([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, $LICENSE_NODE) {
+	Write-Host " "
+	Write-Host "Entered function Licenses on $controller"
 
-    $licenseNames_a = @($LICENSE_TYPES_H.Keys)
-    $licenseValues_a = @($LICENSE_TYPES_H.Values)
+    $licenseNames_a = @($LICENSE_NODE.Keys)
+    $licenseValues_a = @($LICENSE_NODE.Values)
 
 	switch($cmd) {
 	"A"	{		
-			$logger.Info("Applying licenses to $controller")
+			Write-Host"Applying licenses to $controller"
             
             # Avoid unnecessary reboot
             $licenses_a = Get-NaLicense -Names $licenseNames_a -Controller $controller
@@ -187,7 +196,7 @@ function Licenses([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller)
             }
             
             if ($allLicensed) {
-                $logger.Info("All required licenses already installed, skipping reboot")
+                Write-Host"All required licenses already installed, skipping reboot")
                 # Break out of switch statement
                 break
             }
@@ -197,8 +206,8 @@ function Licenses([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller)
 #            foreach ($license in $licenses_a)
 #			{
 #				# TODO: Would require additional call to Get-NaLicense to work, worth it?
-#				if ($license.licensed){$logger.Info("$controller $license is licensed")}
-#				else {$logger.Info("$controller $license is not licensed")}
+#				if ($license.licensed){Write-Host"$controller $license is licensed")}
+#				else {Write-Host"$controller $license is not licensed")}
 #			}
         
 			Invoke-NaSystemApi -Controller $controller "<system-cli><args><arg>reboot</arg><arg>-t</arg><arg>0</arg></args></system-cli>" -ErrorAction SilentlyContinue
@@ -209,18 +218,18 @@ function Licenses([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller)
 		}
 	#Check licenses
 	"V"	{
-			$logger.Info("Verifying licenses to $controller")
+			Write-Host"Verifying licenses to $controller")
 			
 			$licenses = Get-NaLicense -Controller $controller -Names $licenseNames_a -Verbose
 			foreach ($license in $licenses)
 			{
-				if ($license.licensed){$logger.Info("$controller $license is licensed")}
-				else {$logger.Info("$controller $license is not licensed")}
+				if ($license.licensed){Write-Host"$controller $license is licensed")}
+				else {Write-Host"$controller $license is not licensed")}
 			}
 			break
 		}
 	"R"	{
-			$logger.Info("Removing licenses on $controller")
+			Write-Host"Removing licenses on $controller")
             
             # Avoid unnecessary reboot
             $licenses_a = Get-NaLicense -Names $licenseNames_a -Controller $controller
@@ -235,7 +244,7 @@ function Licenses([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller)
             }
             
             if ($noneLicensed) {
-                $logger.Info("No license to be removed installed, skipping reboot")
+                Write-Host"No license to be removed installed, skipping reboot")
                 # Break out of switch statement
                 break
             }
@@ -244,34 +253,34 @@ function Licenses([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller)
             
 #			foreach ($license in $licenses_a)
 #			{
-#				if ($license.licensed){$logger.Info("$controller $license is licensed")}
-#				else {$logger.Info("$controller $license is not licensed")}
+#				if ($license.licensed){Write-Host"$controller $license is licensed")}
+#				else {Write-Host"$controller $license is not licensed")}
 #			}
             
-			$logger.Info("Storage controller rebooting for cluster enablement")
+			Write-Host"Storage controller rebooting for cluster enablement")
 			
 			Invoke-NaSystemApi -Controller $controller "<system-cli><args><arg>reboot</arg><arg>-t</arg><arg>0</arg></args></system-cli>" -ErrorAction SilentlyContinue
 			
 			break
 		}
 	"S"	{
-            $logger.Info(" ")
-            $logger.Info("Saving licenses")
-            $logger.Info(" ")
+            Write-Host" ")
+            Write-Host"Saving licenses")
+            Write-Host" ")
             break
 		}
 	}
-	$logger.Info("Leaving function Licenses on $controller")
+	Write-Host"Leaving function Licenses on $controller")
 }
 
-#Step 6 - Enable high availablity
-function HighAvailability([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
-	$logger.Info(" ")
-	$logger.Info("Entered function HighAvailability on $controller")
+#Step 6 - Enable Cluster
+function Enable-Cluster([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
+	Write-Host" ")
+	Write-Host"Entered function Enable-Cluster on $controller")
 
 	switch ($cmd) {
 	"A" {
-            $logger.Info("Enabling cluster on $controller")
+            Write-Host"Enabling cluster on $controller")
 			
             Enable-NaCluster -Controller $controller
 			
@@ -281,7 +290,7 @@ function HighAvailability([string] $cmd, [NetApp.Ontapi.Filer.NaController] $con
             break
 		}
 	"R" {
-            $logger.Info("Disabling cluster on $controller")
+            Write-Host"Disabling cluster on $controller")
 			
             $cluster = Get-NaCluster -Controller $controller -ErrorAction SilentlyContinue
             if ($cluster.IsEnabled) 
@@ -293,44 +302,44 @@ function HighAvailability([string] $cmd, [NetApp.Ontapi.Filer.NaController] $con
 			break
 		}
 	}
-	$logger.Info("Leaving function Licenses on $controller")
+	Write-Host"Leaving function Licenses on $controller")
 }
 
 function Check_equal_WWNN([NetApp.Ontapi.Filer.NaController] $controllera, [NetApp.Ontapi.Filer.NaController] $controllerb) {
-	$logger.Info("Entered function Check_equal_WWNN for controllers $controllera and $controllerb")
+	Write-Host"Entered function Check_equal_WWNN for controllers $controllera and $controllerb")
 
     ## Name des interfaces einbauen
 	$WWNN_A = Get-NaFcpNodeName -Controller $controllera
     $WWNN_B = Get-NaFcpNodeName -Controller $controllerb
 
     if($WWNN_A -ne $WWNN_B) {
-        $logger.Info("WWNNs differ, configuring WWNN of controller A to B!")
+        Write-Host"WWNNs differ, configuring WWNN of controller A to B!")
         
         Set-NaFcpNodeName -NodeName $WWNN_A -Controller $controllerb
         
-		$logger.Info("Rebooting - Waitng for coming back")
+		Write-Host"Rebooting - Waitng for coming back")
         Invoke-NaSystemApi -Controller $controllerb "<system-cli><args><arg>reboot</arg><arg>-t</arg><arg>0</arg></args></system-cli>" -ErrorAction SilentlyContinue
     }
 	
 	isUp $controllerb
-	$logger.Info("Leaving function Check_equal_WWNN")
+	Write-Host"Leaving function Check_equal_WWNN")
 }
 
 #Step 7 - start FCP and assign ports
 function FCP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
-	$logger.Info("Entered function FCP on $controller")
+	Write-Host"Entered function FCP on $controller")
 
 	switch ($cmd) {
 	"A" {
-			$logger.Info("Enabling FCP and assigning adapters on controller $controller")
-            $logger.Info("Checking if FCP is already enabled on controller $controller")
+			Write-Host"Enabling FCP and assigning adapters on controller $controller")
+            Write-Host"Checking if FCP is already enabled on controller $controller")
             if (!(Test-NaFcp -Controller $controller)) {
-                $logger.Info("enabling FCP on controller $controller")
+                Write-Host"enabling FCP on controller $controller")
                 Enable-NaFcp -Controller $controller
                 Start-Sleep 10
 			}
-            else{$logger.Info("FCP already enabled on controller $controller")}
-            $logger.Info("setting adapter types to Target")
+            else{Write-Host"FCP already enabled on controller $controller")}
+            Write-Host"setting adapter types to Target")
 			
             Set-NaFcAdapterType -Controller $controller -Adapter 0c -Type target
             Set-NaFcAdapterType -Controller $controller -Adapter 0d -Type target			
@@ -338,31 +347,31 @@ function FCP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
 			break
 		}
 	"R" {
-            $logger.Info("Disabling FCP on controller $controller")
-            $logger.Info("Checking if FCP is already disabled on controller $controller")
+            Write-Host"Disabling FCP on controller $controller")
+            Write-Host"Checking if FCP is already disabled on controller $controller")
 			
             if (Test-NaFcp -Controller $controller) {
-                $logger.Info("Disabling FCP on controller $controller")
+                Write-Host"Disabling FCP on controller $controller")
                 Disable-NaFcp -Controller $controller
 			}
-            else{$logger.Info("FCP already disabled on controller $controller")}
+            else{Write-Host"FCP already disabled on controller $controller")}
 			
 			break
 		}
 	}	
 	
-	$logger.Info("Leaving function FCP on $controller")
+	Write-Host"Leaving function FCP on $controller")
 }
 
 #Step 8 - Setting up storage system ntp time synchronization option values
 function NTP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller){
-	$logger.Info(" ")
-	$logger.Info("Entered function NTP on $controller")
+	Write-Host" ")
+	Write-Host"Entered function NTP on $controller")
 			
     switch ($cmd) {
     #Verify NTP Values
     "V"	{
-            $logger.Info("Verifying NTP settings on $controller")
+            Write-Host"Verifying NTP settings on $controller")
 			Get-NaOption -Controller $controller -OptionName timed.proto 
 			Get-NaOption -Controller $controller -OptionName timed.servers 
 			Get-NaOption -Controller $controller -OptionName timed.enable 
@@ -370,7 +379,7 @@ function NTP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller){
 		}
 		#Apply NTP Values
 	"A"	{
-			$logger.Info("Apply NTP settings on $controller")
+			Write-Host"Apply NTP settings on $controller")
 			Set-NaOption -Controller $controller -OptionName timed.proto -OptionValue ntp 
 			Set-NaOption -Controller $controller -OptionName timed.servers -OptionValue $VAR_GLOBAL_NTP_SERVER_IP 
 			Set-NaOption -Controller $controller -OptionName timed.enable -OptionValue on
@@ -378,32 +387,32 @@ function NTP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller){
 		}		
 		#Rollback NTP Values to factory default (nothing)
 	"R"	{
-			$logger.Info("Rollback NTP settings on $controller")
+			Write-Host"Rollback NTP settings on $controller")
 			Set-NaOption -Controller $controller -OptionName timed.proto -OptionValue "" 
 			Set-NaOption -Controller $controller -OptionName timed.servers -OptionValue "" 
 			Set-NaOption -Controller $controller -OptionName timed.enable -OptionValue off
 			break
 		}		
 	}	
-	$logger.Info("Leaving function NTP on $controller")
+	Write-Host"Leaving function NTP on $controller")
 }
 
 #Step 9 - Create aggregates
 function Aggregate([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, [string] $aggrName, [int] $numDisk){
-	$logger.Info(" ")
-	$logger.Info("Entered function Aggregate on $controller")
+	Write-Host" ")
+	Write-Host"Entered function Aggregate on $controller")
 
     switch ($cmd) {
     #List aggregates 
 	"V"	{
-			$logger.Info("List aggregates on $controller")
+			Write-Host"List aggregates on $controller")
 			Get-NaAggr -Controller $controller
 
 			break
 		}
 		#Add aggregate aggr1
 	"A"	{
-			$logger.Info("Add $aggrName on $controller")
+			Write-Host"Add $aggrName on $controller")
 			
             if($config.ContainsKey("<<var_paulwilsons_rg_size>>")) {
                 $rg_size = $config.Get_Item("<<var_paulwilsons_rg_size>>")
@@ -417,7 +426,7 @@ function Aggregate([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller
 			break
 		}
     "R" {
-			$logger.Info("Remove $aggrName on $controller")
+			Write-Host"Remove $aggrName on $controller")
             
 			Set-NaAggr -Controller $controller -Name $aggrName -Offline
 			Remove-NaAggr -Controller $controller -Name $aggrName -Confirm:$false
@@ -425,34 +434,34 @@ function Aggregate([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller
             break
         }	
 	}		
-	$logger.Info("Leaving function Aggregate on $controller")
+	Write-Host"Leaving function Aggregate on $controller")
 }
 
 #Step 10 - enable 802.1q vlan trunking and adding the NFS vlan
 function VLAN([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
 	switch ($cmd) {
 	"A" {
-            $logger.Info("Start step 10 for controller $controller")
-            $logger.Info("Adding VLAN $VIRTUAL_ETH_INTERFACE_NAME with ID " + $config.Get_Item("<<var_global_nfs_vlan_id>>") + "on controller $controller")
+            Write-Host"Start step 10 for controller $controller")
+            Write-Host"Adding VLAN $VIRTUAL_ETH_INTERFACE_NAME with ID " + $config.Get_Item("<<var_global_nfs_vlan_id>>") + "on controller $controller")
             Add-NaNetVlan -Controller $controller -Interface VIRTUAL_ETH_INTERFACE_NAME -Vlans $config.Get_Item("<<var_global_nfs_vlan_id>>")  
 		
-            $logger.Info("setting interface " + $config.Get_Item("<<var_global_nfs_vlan_id>>") + " MTUSize to 9000 and Partner to "+ $config.Get_Item("<<var_global_nfs_vlan_id>>"))
+            Write-Host"setting interface " + $config.Get_Item("<<var_global_nfs_vlan_id>>") + " MTUSize to 9000 and Partner to "+ $config.Get_Item("<<var_global_nfs_vlan_id>>"))
             Set-NaNetInterface -Controller $controller -InterfaceName VIRTUAL_ETH_INTERFACE_NAME -MtuSize 9000 -Partner $config.Get_Item("<<var_global_nfs_vlan_id>>")
             Get-NaNetInterface -Controller $controller
 		}
 	"R" {
-            $logger.Info("Start step 10 for controller $controller")
-            $logger.Info("Removing VLAN $VIRTUAL_ETH_INTERFACE_NAME on controller $controller")
+            Write-Host"Start step 10 for controller $controller")
+            Write-Host"Removing VLAN $VIRTUAL_ETH_INTERFACE_NAME on controller $controller")
             Remove-NaNetVlan -Controller $controller -Interface $VIRTUAL_ETH_INTERFACE_NAME
 		}
 	}
-	$logger.Info("Step 10 completed on controller $controller")
+	Write-Host"Step 10 completed on controller $controller")
 }
 
 #Step 10 - enable 802.1q vlan trunking and adding the NFS vlan
 function VLAN_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, [string] $ifName, [int] $vLanId) {
-	$logger.Info(" ")
-	$logger.Info("Entered function VLAN_viaSSH on $controller")
+	Write-Host" ")
+	Write-Host"Entered function VLAN_viaSSH on $controller")
 
 	# TODO: is "ifconfig e0M partner e0M" supposed to happen here
 	$ifconfigSshCmd_a = @("ifconfig e0M partner e0M",
@@ -466,8 +475,8 @@ function VLAN_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controll
 
 	switch ($cmd) {
 	"A" {			
-			$logger.Info("Adding VLAN $ifName-$vLanId with ID $vLanId on controller $controller")
-			$logger.Info("setting interface $ifName-$vLanId MTUSize to 9000 and Partner to $ifName-$vLanId")
+			Write-Host"Adding VLAN $ifName-$vLanId with ID $vLanId on controller $controller")
+			Write-Host"setting interface $ifName-$vLanId MTUSize to 9000 and Partner to $ifName-$vLanId")
 
 			# Collect start fingerprint
 			$rcFileSshCmd_a = @("wrfile -a /etc/rc `"$fingerprintStart`"")
@@ -499,7 +508,7 @@ function VLAN_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controll
 			break
 		}
 	"R" {
-			$logger.Info("Removing VLAN $ifName on controller $controller")
+			Write-Host"Removing VLAN $ifName on controller $controller")
 		
 			# Delete vlan
 			Invoke-NaSsh -Controller $controller -Command "ifconfig e0M -partner"
@@ -534,7 +543,7 @@ function VLAN_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controll
 			break
 		}
 	}
-	$logger.Info("Leaving function VLAN_viaSSH on $controller")
+	Write-Host"Leaving function VLAN_viaSSH on $controller")
 }
 
 
@@ -542,115 +551,115 @@ function VLAN_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controll
 function hardening([NetApp.Ontapi.Filer.NaController] $controller) 
 {
     # TODO: Password is $VAR_GLOBAL_DEFAULT_PASSWD from the start
-	$logger.Info("Start step 11 for controller $controller")
+	Write-Host"Start step 11 for controller $controller")
 	Set-NaUserPassword -Controller $controller -User "root" -OldPassword "Netapp1" -NewPassword $VAR_GLOBAL_DEFAULT_PASSWD
-	$logger.Info("Step 11 completed on controller")
+	Write-Host"Step 11 completed on controller")
 }
 
 #Step 12 - Create SNMP request role and assign SNMP login priviledges
 function SNMP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
-	$logger.Info(" ")
-	$logger.Info("Entered function SNMP on $controller")
+	Write-Host" ")
+	Write-Host"Entered function SNMP on $controller")
 
     switch ($cmd) {
     "A" {
 			$roleName = $config.Get_Item("<<var_ntap_snmp_request_role>>")
-			$logger.Info("Adding role $roleName to $controller")
+			Write-Host"Adding role $roleName to $controller")
             if (!(Get-NaRole -Controller $controller -Role $config.Get_Item("<<var_ntap_snmp_request_role>>") -ErrorAction SilentlyContinue)) {                
                 New-NaRole -Controller $controller -Role $config.Get_Item("<<var_ntap_snmp_request_role>>") -Capabilities "login-snmp"
             }
             else {
-				$logger.Info("role " + $config.Get_Item("<<var_ntap_snmp_request_role>>") + "exists")
+				Write-Host"role " + $config.Get_Item("<<var_ntap_snmp_request_role>>") + "exists")
 				# Make sure it has the right capability
 				Set-NaRole -Controller $controller -Role $config.Get_Item("<<var_ntap_snmp_request_role>>") -AddCapabilities "login-snmp"
 			}
 
             #Step 13 - create SNMP management group and assign SNMP request role to it
 			$groupName = $config.Get_Item("<<var_ntap_snmp_managers>>")
-			$logger.Info("Adding group $groupName to $controller")
+			Write-Host"Adding group $groupName to $controller")
             if (!(Get-NaGroup -Controller $controller -Group $config.Get_Item("<<var_ntap_snmp_managers>>") -ErrorAction SilentlyContinue))
             {                
                 New-NaGroup -Controller $controller -Group $config.Get_Item("<<var_ntap_snmp_managers>>") -Roles $config.Get_Item("<<var_ntap_snmp_request_role>>")
             }
             else {
-				$logger.Info("group " + $config.Get_Item("<<var_ntap_snmp_managers>>") + " exists")
+				Write-Host"group " + $config.Get_Item("<<var_ntap_snmp_managers>>") + " exists")
 				# Make sure the right role is assigned
 				Set-NaGroup -Controller $controller -Group $config.Get_Item("<<var_ntap_snmp_managers>>") -AddRoles $config.Get_Item("<<var_ntap_snmp_request_role>>")
 			}
 
             #Step 14 - create SNMP user and assign to the SNMP mgmt group
 			$userName = $config.Get_Item("<<var_ntap_snmp_user>>")
-			$logger.Info("Adding user $userName to $controller")
+			Write-Host"Adding user $userName to $controller")
 			
 			# Remove existing user to be shure we have the right password set
             if (Get-NaUser -Controller $controller -User $config.Get_Item("<<var_ntap_snmp_user>>") -ErrorAction SilentlyContinue)
             {
-				$logger.Info("User " +  $config.Get_Item("<<var_ntap_snmp_user>>") + " exists, replacing.")
+				Write-Host"User " +  $config.Get_Item("<<var_ntap_snmp_user>>") + " exists, replacing.")
                 Remove-NaUser -Controller $controller -User $config.Get_Item("<<var_ntap_snmp_user>>") -Confirm:$false
             }
 	
 			New-NaUser -Controller $controller -User $config.Get_Item("<<var_ntap_snmp_user>>") -Groups $config.Get_Item("<<var_ntap_snmp_managers>>") -Password $config.Get_Item("<<var_ntap_snmp_password>>")
 
             #Step 15 - Enable SNMP on the storage controllers
-            $logger.Info("Enabling snmp on $controller")
+            Write-Host"Enabling snmp on $controller")
 			# TODO: Skip?
             Set-NaOption -Controller $controller -OptionName "snmp.enable" -OptionValue "on"
 
             #Step 16 - Delete SNMP v1 communities from the storage controllers
-            $logger.Info("Removing existing SNMP communities from $controller")
+            Write-Host"Removing existing SNMP communities from $controller")
             Remove-NaSnmpCommunity -Controller $controller -All
 
             #Step 17 - Set SNMP contact information for each of the storage controller
-            $logger.Info("Setting SNMP contact information on $controller")
+            Write-Host"Setting SNMP contact information on $controller")
             Set-NaSnmpContact -Controller $controller -Contact $config.Get_Item("<<var_ntap_admin_email_address>>")
 
             #Step 18 - Set SNMP location information for each storage controller
-            $logger.Info("Setting SNMP location information on $controller")
+            Write-Host"Setting SNMP location information on $controller")
             Set-NaSnmpLocation -Controller $controller -Location $config.Get_Item("<<var_ntap_snmp_site_name>>") -ErrorAction SilentlyContinue
 
             #Step 19 - Establish SNMP trap destination
-            $logger.Info("Establishing SNMP trap host on $controller")
+            Write-Host"Establishing SNMP trap host on $controller")
             # TODO: var_ntap_dfm_hostname or var_ntap_snmp_trapdest or var_ntap_traphost
             Add-NaSnmpTrapHost -Controller $controller -Hosts $config.Get_Item("<<var_ntap_dfm_hostname>>") -ErrorAction SilentlyContinue
             #Add-NaSnmpTrapHost -Controller $controller -Hosts $config.Get_Item("<<var_ntap_dfm_hostname>>").$config.Get_Item("<<var_global_domain_name>>")
 
             #Step 20 - Reinitialize SNMP on the storage controllers
-            $logger.Info("Reinitializing SNMP on $controller")
+            Write-Host"Reinitializing SNMP on $controller")
             Enable-NaSnmp -Controller $controller
             
             break
         }
     "R" {
             #Step 15/20 - Disable SNMP on the storage controllers
-            $logger.Info("Removing SNMP trap host from $controller")
+            Write-Host"Removing SNMP trap host from $controller")
             Set-NaOption -Controller $controller -OptionName "snmp.enable" -OptionValue "off"
     
             #Step 19 - Remove SNMP trap destination
-            $logger.Info("Start step 19 for controller $controller")
+            Write-Host"Start step 19 for controller $controller")
             $snmp = Get-NaSnmp -Controller $controller                        
             Remove-NaSnmpTrapHost -Controller $controller -Hosts $snmp.Traphosts
-            $logger.Info("Step 19 completed for controller $controller" )
+            Write-Host"Step 19 completed for controller $controller" )
             
             #Step 18 - Unset SNMP location information for each storage controller
-            $logger.Info("SUnset SNMP location information for $controller")
+            Write-Host"SUnset SNMP location information for $controller")
             Set-NaSnmpLocation -Controller $controller -Location ""
             
             #Step 17 - Unset SNMP contact information for each of the storage controller
-            $logger.Info("Start step 17 for controller $controller")
+            Write-Host"Start step 17 for controller $controller")
             Set-NaSnmpContact -Controller $controller -Contact ""
-            $logger.Info("Step 17 completed for controller $controller")
+            Write-Host"Step 17 completed for controller $controller")
             
             #Step 16 - Restore default SNMP v1 communities on the storage controllers
-            $logger.Info("Restore default SNMP communities on $controller")
+            Write-Host"Restore default SNMP communities on $controller")
             Add-NaSnmpCommunity -Controller $controller -Community "public"
     
-            $logger.Info("Removing SNMP user from $controller")
+            Write-Host"Removing SNMP user from $controller")
             Remove-NaUser -Controller $controller -User $config.Get_Item("<<var_ntap_snmp_user>>") -Confirm:$false
     
-            $logger.Info("Removing SNMP group from $controller")
+            Write-Host"Removing SNMP group from $controller")
             Remove-NaGroup -Controller $controller -Group $config.Get_Item("<<var_ntap_snmp_managers>>") -Confirm:$false
     
-            $logger.Info("Removing SNMP role from $controller")
+            Write-Host"Removing SNMP role from $controller")
             Remove-NaRole -Controller $controller -Role $config.Get_Item("<<var_ntap_snmp_request_role>>") -Confirm:$false
             
             break
@@ -666,26 +675,26 @@ function SNMP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
 #    switch ($cmd) {
 #    #List aggregates 
 #    "V"	{
-#            $logger.Info(" ")
-#			$logger.Info("Start step 21 for controller $controller")
-#			$logger.Info("Verify FlashCache Status")
+#            Write-Host" ")
+#			Write-Host"Start step 21 for controller $controller")
+#			Write-Host"Verify FlashCache Status")
 #			Get-NaOption -Controller $controllera -OptionName "flexscale.enable"
 #			Get-NaOption -Controller $controllerb -OptionName "flexscale.enable"
 #			break
 #        }
 #		#Enable FlashCache
 #    "A"	{
-#			$logger.Info(" ")
-#			$logger.Info("Start step 21 for controller $controller")
-#			$logger.Info("Enable FlashCache on controllers")
+#			Write-Host" ")
+#			Write-Host"Start step 21 for controller $controller")
+#			Write-Host"Enable FlashCache on controllers")
 #			Set-NaOption -Controller $controllera -OptionName "flexscale.enable" -OptionValue "on" -ErrorAction SilentlyContinue
 #			Set-NaOption -Controller $controllerb -OptionName "flexscale.enable" -OptionValue "on" -ErrorAction SilentlyContinue
 #			break
 #		}
 #    "R" {
-#            $logger.Info(" ")
-#			$logger.Info("Start step 21 for controller $controller")
-#			$logger.Info("Disable FlashCache on controllers")
+#            Write-Host" ")
+#			Write-Host"Start step 21 for controller $controller")
+#			Write-Host"Disable FlashCache on controllers")
 #            
 #            Set-NaOption -Controller $controllera -OptionName "flexscale.enable" -OptionValue "off" -ErrorAction SilentlyContinue
 #			Set-NaOption -Controller $controllerb -OptionName "flexscale.enable" -OptionValue "off" -ErrorAction SilentlyContinue
@@ -693,44 +702,44 @@ function SNMP([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
 #            break
 #        }
 #	}
-#	$logger.Info("Step 21 completed")
+#	Write-Host"Step 21 completed")
 #}
 
 #Step 21 - Enable FlashCache
 function FlashCache([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller){
-	$logger.Info(" ")
-	$logger.Info("Entered function FlashCache on $controller")
+	Write-Host" ")
+	Write-Host"Entered function FlashCache on $controller")
 	
 	switch ($cmd) {
 	"V"	{
-			$logger.Info("Verify FlashCache Status")
+			Write-Host"Verify FlashCache Status")
 			
 			Get-NaOption -Controller $controller -OptionName "flexscale.enable"
 			
 			break
 		}
 	"A" {
-			$logger.Info("Enable FlashCache on $controller")
+			Write-Host"Enable FlashCache on $controller")
 			
 			Set-NaOption -Controller $controller -OptionName "flexscale.enable" -OptionValue "on" -ErrorAction SilentlyContinue
 			
 			break
 		}
 	"R" {
-			$logger.Info("Disable FlashCache on controllers")
+			Write-Host"Disable FlashCache on controllers")
 			
 			Set-NaOption -Controller $controller -OptionName "flexscale.enable" -OptionValue "off" -ErrorAction SilentlyContinue
 			
 			break
 		}
 	}
-	$logger.Info("Leaving function FlashCache on $controller")
+	Write-Host"Leaving function FlashCache on $controller")
 }
 			
 #Step 22 - Create the nessesary infrastructure volume
 function Volumes([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, [string] $aggr, [Hashtable] $volumes) {
-	$logger.Info(" ")
-    $logger.Info("Entered function Volumes on $controller")
+	Write-Host" ")
+    Write-Host"Entered function Volumes on $controller")
 
     switch ($cmd) {
     "A" {
@@ -743,7 +752,7 @@ function Volumes([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, 
 			}
 	
             foreach ($volName in $volumes.Keys) {
-				$logger.Info("Creating volume $volName on $controller")
+				Write-Host"Creating volume $volName on $controller")
 			
                 $volProperties_h = $volumes.Get_Item($volName)
         
@@ -770,7 +779,7 @@ function Volumes([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, 
         }
     "R" {   
             foreach ($volName in $volumes.Keys) {
-				$logger.Info("Removing volume $volName")
+				Write-Host"Removing volume $volName")
                 Set-NaVol -Controller $controller -Name $volName -Offline
 				Remove-NaVol -Controller $controller -Name $volName -Confirm:$false
             }
@@ -779,25 +788,25 @@ function Volumes([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, 
         }
     }   
     
-    $logger.Info("Leaving function Volumes on $controller")
+    Write-Host"Leaving function Volumes on $controller")
 }
 
 
 
 #Step 23 - Create the infrastructure IP space 
 function IPSpace() {
-	$logger.Info("Start step 23 for controller $controller")
+	Write-Host"Start step 23 for controller $controller")
 	Remove-NaNetIpspace -Controller $controllera -Name "infrastructure"
 	New-NaNetIpspace -Controller $controllera -Name "infrastructure" -Interfaces "$VIRTUAL_ETH_INTERFACE_NAME"
 	Remove-NaNetIpspace -Controller $controllerb -Name "infrastructure"
 	New-NaNetIpspace -Controller $controllerb -Name "infrastructure" -Interfaces "$VIRTUAL_ETH_INTERFACE_NAME"
-	$logger.Info("Step 23 completed")
+	Write-Host"Step 23 completed")
 }
 
 #Step 23 - Create the infrastructure IP space 
 function IPSpace_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller) {
-	$logger.Info(" ")
-	$logger.Info("Entered function IPSpace_viaSSH on $controller")
+	Write-Host" ")
+	Write-Host"Entered function IPSpace_viaSSH on $controller")
 	
 	switch ($cmd) {
 	"A" {
@@ -810,7 +819,7 @@ function IPSpace_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $contr
 		             $line = $line.Replace($item.Name, $item.Value)
 		        }
 				
-				$logger.Info("Executing ssh command $line")
+				Write-Host"Executing ssh command $line")
 		        Invoke-NaSsh  -Command $line -Controller $controller
 		    }
 			
@@ -825,7 +834,7 @@ function IPSpace_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $contr
 		             $line = $line.Replace($item.Name, $item.Value)
 		        }
 				
-				$logger.Info("Executing ssh command $line")
+				Write-Host"Executing ssh command $line")
 		        Invoke-NaSsh  -Command $line -Controller $controller
 		    }
 			
@@ -833,14 +842,14 @@ function IPSpace_viaSSH([string] $cmd, [NetApp.Ontapi.Filer.NaController] $contr
 		}
 	}
 
-	$logger.Info("Leaving function IPSpace_viaSSH on $controller")
+	Write-Host"Leaving function IPSpace_viaSSH on $controller")
 }
 
 
 #Step 24 - Create the infrastructure vfiler units
 function VFilers([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, [Hashtable] $vFiler_h) {
-	$logger.Info(" ")
-	$logger.Info("Entered function VFilers on $controller")
+	Write-Host" ")
+	Write-Host"Entered function VFilers on $controller")
 	
 	switch ($cmd) {
 	"A" {
@@ -853,7 +862,7 @@ function VFilers([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, 
 		}
 	}
 
-	$logger.Info("Step 24 completed")
+	Write-Host"Step 24 completed")
 }
 
 
@@ -862,8 +871,8 @@ function VFilers([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, 
 ### cmdline controllerb: ifconfig $VIRTUAL_ETH_INTERFACE_NAME-100 <<var_infrastructure_vfiler_2>>
 ### put this into /etc/rc file
 function SetIPtovif([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, [Hashtable] $vFiler_h) {
-	$logger.Info(" ")
-    $logger.Info("Entered function SetIPtovif on $controller")
+	Write-Host" ")
+    Write-Host"Entered function SetIPtovif on $controller")
 
 	$vFilerAddress = $vFiler_h.Get_Item("address")
 	$ifconfigSshCmd = "ifconfig $VIRTUAL_ETH_INTERFACE_NAME-<<var_global_nfs_vlan_id>> $vFilerAddress"
@@ -931,7 +940,7 @@ function SetIPtovif([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controlle
 		}
     }
 	
-	$logger.Info("Leaving function SetIPtovif on $controller")
+	Write-Host"Leaving function SetIPtovif on $controller")
 }
 
 ### Cream on cake, do /etc/hosts
@@ -941,15 +950,15 @@ function SetIPtovif([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controlle
 
 #Step 25 - Map the nessesary infrastructure volumes to the infrastructure vfiler
 function MapVols([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, [System.Management.Automation.PSCredential] $cred, [Hashtable] $vFiler_h, [string] $storage) {		
-	$logger.Info(" ")
-    $logger.Info("Entered function MapVols on $controller")
+	Write-Host" ")
+    Write-Host"Entered function MapVols on $controller")
 
 	switch ($cmd) {	
 	"A" {	
 			Set-NaVfilerStorage -Controller $controller -Name $vFiler_h.Get_Item("name") -AddStorage $storage
 
 			#Step 26 - Export the infrastructure volumes to the ESXi servers over NFS
-			$logger.Info("Exporting volume $storage on vfiler of $controller")
+			Write-Host"Exporting volume $storage on vfiler of $controller")
 			
 			$storagePath = "/vol/" + $storage
 
@@ -964,23 +973,23 @@ function MapVols([string] $cmd, [NetApp.Ontapi.Filer.NaController] $controller, 
 			break
 		}
 	"R"	{
-			$logger.Info("Start step 26 for controller $controller")
+			Write-Host"Start step 26 for controller $controller")
 			
 			# TODO: unnecessary? remove
 			Remove-NaNfsExport -Controller $controller -Paths $storage -Persistent
 			
-			$logger.Info("Step 26 completed")
+			Write-Host"Step 26 completed")
 			
-			$logger.Info("Start step 25 for controller $controller")
+			Write-Host"Start step 25 for controller $controller")
 			
 			Set-NaVfilerStorage -Controller $controller -Name $vFiler_h.Get_Item("name") -RemoveStorage $storage
 			
-			$logger.Info("Step 25 completed")
+			Write-Host"Step 25 completed")
 			
 			break
 		}
 	}	
-	$logger.Info("Leaving function MapVols on $controller")
+	Write-Host"Leaving function MapVols on $controller")
 }
 
 #Step 27 - Implement security on the console
@@ -1061,7 +1070,7 @@ isUp $VAR_NTAP_B_MGMT_INT_IP
 # Gather the NetApp controller credentials
 $password = ConvertTo-SecureString $VAR_GLOBAL_DEFAULT_PASSWD -AsPlainText -Force
 $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "root",$password
-#$logger.Info("Updated controller credentials $cred")
+#Write-Host"Updated controller credentials $cred")
 
 # Connect to controllers
 Add-NaCredential -Controller $VAR_NTAP_A_MGMT_INT_IP -Credential $cred
@@ -1074,7 +1083,7 @@ $controllerb = Connect-NaController -Name $VAR_NTAP_B_MGMT_INT_IP -Credential $c
 $script:logger = Prepare-Logger $LOG_CONFIG_PATH
 $script:undoLogger = Prepare-UndoLogger $LOG_CONFIG_PATH
 
-$logger.Info("Connected to controllers")
+Write-Host"Connected to controllers")
 
 ##############################################
 # Enter commands on the lines below
@@ -1144,7 +1153,7 @@ foreach ($function in $functions_a) {
 	foreach($item in $config.GetEnumerator()) {
 		             $function = $function.Replace($item.Name, $item.Value)
 	}
-	$logger.Info("Executing $function")
+	Write-Host"Executing $function")
 
 	Invoke-Expression $function
 	

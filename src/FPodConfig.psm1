@@ -1,64 +1,10 @@
-$logger_path = "C:\Documents and Settings\ahohl\Desktop\Fpod_PS_git\log4net-1.2.11\bin\net\3.5\release\log4net.dll"
-
-# Reads the log4net config file $configPath and returns a logger
-function Prepare-Logger([string] $configPath) {
-	
-
-	write-Host $logger_path
-
-	# Save current Appdomain.BaseDirectory
-	$oldDir = [System.AppDomain]::CurrentDomain.BaseDirectory
-	
-	# Change AppDomain.BaseDirectory for relative paths to work here and in the config xml
-	$workingDir = Split-Path $configPath
-	[System.AppDomain]::CurrentDomain.SetData("APPBASE", $workingDir)
-
-	# Prepare the logger
-    [Reflection.Assembly]::Loadfile($logger_path) | Out-Null
-	
-	[System.IO.FileInfo]$fi = new-object System.IO.FileInfo "$configPath"
-	
-    [log4net.Config.XmlConfigurator]::Configure($fi)
-
-	$logger = [log4net.LogManager]::getLogger("FlexPod Ignite")
-
-	# Reset AppDomain.BaseDirecrtory
-	[System.AppDomain]::CurrentDomain.SetData("APPBASE", $oldDir)	
-
-    return $logger
-}
-
-# Reads the log4net config file $configPath and returns an undo logger
-function Prepare-UndoLogger([string] $configPath) {
-	# Save current Appdomain.BaseDirectory
-	$oldDir = [System.AppDomain]::CurrentDomain.BaseDirectory
-
-	# Change AppDomain.BaseDirectory for relative paths to work here and in the config xml
-	$workingDir = Split-Path $configPath
-	[System.AppDomain]::CurrentDomain.SetData("APPBASE", $workingDir)
-
-	# Prepare the logger
-    [Reflection.Assembly]::Loadfile($logger_path) | Out-Null
-	
-	[System.IO.FileInfo]$fi = new-object System.IO.FileInfo "$configPath"
-	
-    [log4net.Config.XmlConfigurator]::Configure($fi)
-
-	$logger = [log4net.LogManager]::getLogger("UndoLogger")
-
-	# Reset AppDomain.BaseDirecrtory
-	[System.AppDomain]::CurrentDomain.SetData("APPBASE", $oldDir)
-
-    return $logger
-}
-
 function Read-FPodConfig([string] $fpod_conf) {
 
     $replace_table = @{}
-    $pattern = "<<var_.*>>"
+    $pattern = "<<.*>>"
 
     try {
-        Import-Csv $fpod_conf -Delimiter ';' | foreach-object {
+        Import-Csv $fpod_conf -Delimiter ',' | foreach-object {
             $varname = $_."Variable Name"
             $varvalue = $_."Variable Value"
                       
@@ -129,7 +75,7 @@ function Test-VarPresence([string] $scriptfile, $config) {
     $tmp = Get-Content $scriptfile
     $code = [string] $tmp
 
-    $pattern = "<<var_.*>>"
+    $pattern = "<<.*>>"
 
     filter Matches($pattern) {
         $_ | Select-String $pattern | Select-Object -ExpandProperty Matches | Select-Object -ExpandProperty Value
@@ -153,10 +99,9 @@ function Append-Var([string] $file, [string] $key, [string] $value) {
 }
 
 function Dump-Csv([string] $file, $conf) {
-    "Variable Name;Variable Value" | out-file $file
-    
+    "Variable Name,Variable Value" | out-file $file
     foreach($item in ($conf.GetEnumerator() | sort name) ) {
-        "" + $item.Name + ";" + $item.Value | out-file $file -append
+        "" + $item.Name + "," + $item.Value | out-file $file -append
     }
 }
 
