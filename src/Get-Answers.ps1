@@ -100,19 +100,21 @@ $ws1.Activate()
 ### Dump answers into Hash
 Write-Host "Read values from worksheet $cust_sheet_name..."
 $i=3
-while($ws1.Cells.Item($i, 1).Value2){
-	switch -wildcard ($ws1.Cells.Item($i, 1).Value2)
+$temp=$ws1.Cells.Item($i, 1).Value2
+while($temp){
+	switch -wildcard ($temp)
 	{
-		"<<ntap*" {$Netapp.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
-		"<<ucs*" {$UCS.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
-		"<<nex*" {$Nexus.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
-		"<<global*" {$Global.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
-		"<<ans*" {$answers.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
-		"<<vmw*" {$VMWare.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
-		"<<nx1*" {if($answers.Get_Item("<<ans_1000v>>")){$NX1000v.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}}
-		default {$config.add($ws1.Cells.Item($i, 1).Value2, $ws1.Cells.Item($i, 2).Value2)}
+		"<<ntap*" {$Netapp.add($temp, $ws1.Cells.Item($i, 2).Value2)}
+		"<<ucs*" {$UCS.add($temp, $ws1.Cells.Item($i, 2).Value2)}
+		"<<nex*" {$Nexus.add($temp, $ws1.Cells.Item($i, 2).Value2)}
+		"<<global*" {$Global.add($temp, $ws1.Cells.Item($i, 2).Value2)}
+		"<<ans*" {$answers.add($temp, $ws1.Cells.Item($i, 2).Value2)}
+		"<<vmw*" {$VMWare.add($temp, $ws1.Cells.Item($i, 2).Value2)}
+		"<<nx1*" {if($answers.Get_Item("<<ans_1000v>>")){$NX1000v.add($temp, $ws1.Cells.Item($i, 2).Value2)}}
+		default {$config.add($temp, $ws1.Cells.Item($i, 2).Value2)}
 	}
 	$i++
+	$temp=$ws1.Cells.Item($i, 1).Value2
 }
 
 
