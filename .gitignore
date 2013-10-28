@@ -49,6 +49,8 @@ x64/
 build/
 [Bb]in/
 [Oo]bj/
+scratch/
+[Cc]onfig/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

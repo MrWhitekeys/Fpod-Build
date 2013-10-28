@@ -62,6 +62,15 @@ $Global = @{}
 $Nexus = @{}
 $NX1000v = @{}
 $config = @{}
+$nexusA = @{}
+$nexusB = @{}
+$netappA = @{}
+$netappB = @{}
+$ucsFIA =@{}
+$ucsFIB =@{}
+$1000vA =@{}
+$1000vB =@{}
+
 ### First go to Question sheet
 $cust_sheet_name = "Answers"
 Write-Host "Open worksheet $cust_sheet_name..."
@@ -117,6 +126,39 @@ while($temp){
 	$temp=$ws1.Cells.Item($i, 1).Value2
 }
 
+Write-Host "Getting Interface Mapping"
+$cust_sheet_name = "Interface map"
+try { $ws1 = $wb.Worksheets.Item($cust_sheet_name) }
+catch {
+	Write-Host "..Cannot open worksheet $cust_sheet_name. Quit the script."
+	$wb.Close()
+	$excel.Quit()
+	Remove-ComObject
+	exit(4)
+}
+$ws1.Activate()
+
+### Dump interfaces into Hashes
+$i=2
+$temp=$ws1.Cells.Item($i, 1).Value2
+while($temp){
+	
+	switch ($temp)
+	{
+		"<<Nexus_A>>" {$nexusA.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}
+		"<<Nexus_B>>" {$nexusB.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}
+		"<<NetApp_A>>" {$netappA.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}
+		"<<NetApp_B>>" {$netappB.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}
+		"<<Fabric_Interconnect_A>>" {$ucsFIA.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}
+		"<<Fabric_Interconnect_B>>" {$ucsFIB.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}
+		"<<1000V_A>>" {if($answers.Get_Item("<<ans_1000v>>")){$1000vA.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}}
+		"<<1000V_A>>" {if($answers.Get_Item("<<ans_1000v>>")){$1000vB.add($ws1.Cells.Item($i, 2).Value2, $ws1.Cells.Item($i, 3).Value2)}}
+		default {}
+	}
+	$i++
+	$temp=$ws1.Cells.Item($i, 1).Value2
+}
+
 
 Write-Host "Saving configurations ..."
 #Save answers to file so each script 
@@ -126,9 +168,18 @@ Dump-Csv "../Config/ucs-config.csv" $UCS
 Dump-Csv "../Config/vmware-config.csv" $VMWare
 Dump-Csv "../Config/global-config.csv" $Global
 Dump-Csv "../Config/answers-config.csv" $answers 
+Dump-Csv "../Config/Device/nexusA.csv" $nexusA
+Dump-Csv "../Config/Device/nexusB.csv" $nexusB
+Dump-Csv "../Config/Device/netappA.csv" $netappA
+Dump-Csv "../Config/Device/netappB.csv" $netappB
+Dump-Csv "../Config/Device/ucsFIA.csv" $ucsFIA
+Dump-Csv "../Config/Device/ucsFIB.csv" $ucsFIB
 if($answers.Get_Item("<<ans_1000v>>")){
 	Dump-Csv "../Config/1000v-config.csv" $NX1000v
+	Dump-Csv "../Config/Device/1000vA.csv" $1000vA
+	Dump-Csv "../Config/Device/1000vB.csv" $1000vB
 }
+
 Dump-Csv "../Config/config.csv" $config 
 Write-Host "Save complete ..."
 ##### close Excel and cleanup
